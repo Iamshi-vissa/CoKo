@@ -1,0 +1,13 @@
+{
+  "name": "coko",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CoKo — desktop assistant & daily activity tracker with a reactive mascot",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}
