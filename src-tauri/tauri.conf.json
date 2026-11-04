@@ -12,17 +12,35 @@
       {
         "label": "main",
         "title": "CoKo",
+        "url": "index.html",
         "width": 1040,
         "height": 700,
         "minWidth": 860,
         "minHeight": 600,
         "resizable": true,
+        "visible": false,
         "center": true
+      },
+      {
+        "label": "widget",
+        "title": "CoKo",
+        "url": "widget.html",
+        "width": 210,
+        "height": 230,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "shadow": false,
+        "focus": false,
+        "visibleOnAllWorkspaces": true
       }
     ],
     "security": {
       "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self'"
-    }
+    },
+    "macOSPrivateApi": true
   },
   "bundle": {
     "active": true,

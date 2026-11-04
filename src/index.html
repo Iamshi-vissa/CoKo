@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CoKo</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="widget.css" />
 </head>
 <body>
   <div class="app">
@@ -119,6 +120,7 @@
           <label class="tog"><input type="checkbox" id="sNBatt" /> Battery notifications</label>
           <label class="tog"><input type="checkbox" id="sNBreak" /> Break reminders</label>
           <label class="tog"><input type="checkbox" id="sNLog" /> Hourly work-log summaries</label>
+          <label class="tog"><input type="checkbox" id="sWidget" /> Show floating desktop widget</label>
           <div class="row end">
             <button id="testNotify">Test notification</button>
             <button class="primary" id="saveSettings">Save</button>
@@ -139,7 +141,9 @@
 
   <div class="toast" id="toast"></div>
 
+  <script src="assets/koko/sprites.js"></script>
   <script src="mascot.js"></script>
+  <script src="character.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

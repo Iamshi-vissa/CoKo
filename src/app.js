@@ -14,7 +14,7 @@
   let settings, profiles, profile, status = {};
   let lastSummaryFetch = 0, distractionNudgeAt = 0, clicks = [];
   let journalKind = "note", journalMood = null;
-  const koko = new Koko($("#mascot"), $("#bubble"));
+  const koko = Character.create($("#mascot"), $("#bubble"));
 
   // ------------------------------------------------------------ helpers
   const fmt = (s) => {
@@ -38,21 +38,8 @@
   }
 
   // ------------------------------------------------------------ mood engine
-  function deriveMood(s) {
-    const pct = s.battery_percent, charging = s.charging;
-    if (pct != null && !charging && pct <= 10) return "panic";
-    if (pct != null && !charging && pct <= settings.low_battery_percent) return "worried";
-    if (s.state === "away") return "sleepy";
-    const brk = (settings.break_minutes ?? profile.break_minutes) * 60;
-    if (s.continuous_active_secs >= brk * 0.85) return "tired";
-    if (s.category === "focus") return "focused";
-    return "happy";
-  }
-
-  const REACT = {
-    break: "tired", battery_low: "worried", battery_critical: "panic", battery_full: "excited",
-    plugged: "love", unplugged: "surprised", goal: "excited", worklog: "wave", welcome_back: "wave", away: "sleepy",
-  };
+  const deriveMood = (s) => Character.deriveMood(s, settings, profile);
+  const REACT = Character.REACT;
 
   koko.el.addEventListener("mood", (e) => ($("#moodLabel").textContent = e.detail));
 
@@ -232,6 +219,7 @@
     $("#sNBatt").checked = settings.notify_battery;
     $("#sNBreak").checked = settings.notify_breaks;
     $("#sNLog").checked = settings.notify_worklog;
+    $("#sWidget").checked = settings.show_widget !== false;
   }
 
   $("#saveSettings").addEventListener("click", async () => {
@@ -246,12 +234,16 @@
       notify_battery: $("#sNBatt").checked,
       notify_breaks: $("#sNBreak").checked,
       notify_worklog: $("#sNLog").checked,
+      show_widget: $("#sWidget").checked,
     }});
     toast("Settings saved");
     koko.react("giggle", 2000); koko.say(`Got it${userName()}! I'll remember that~`);
     refreshToday();
   });
   $("#testNotify").addEventListener("click", () => api.invoke("test_notification").then(() => toast("Notification sent")).catch((e) => toast(String(e))));
+
+  // Esc hides the dashboard popup; CoKo keeps running as the widget.
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape" && T) api.invoke("hide_dashboard"); });
 
   // ------------------------------------------------------------ tabs
   $$(".tab").forEach((t) => t.addEventListener("click", () => {
@@ -271,6 +263,7 @@
     if (b.status && b.status.session_start) onStatus(b.status);
     await api.listen("coko-status", (e) => onStatus(e.payload));
     await api.listen("coko-event", (e) => onEvent(e.payload));
+    await api.listen("dashboard-shown", () => { refreshToday(); koko.react("wave", 1800); });
     refreshToday();
     if (!settings.onboarded) { renderProfileGrid("#onboardGrid", true); $("#onboard").hidden = false; }
     else greet();
@@ -288,7 +281,7 @@
       P("office", "Office", "Work hours, meetings and end-of-day reports", "#4fd1a5", 8, 60, ["Inbox hero~"], ["What did you finish today?"]),
       P("personal", "Personal", "Screen-time balance, habits and a gentle daily journal", "#b48cff", 3, 40, ["Remember to stretch!"], ["How are you feeling today?"]),
     ];
-    let settings = { profile: "developer", mascot_name: "Koko", user_name: "Bharath", daily_goal_hours: null, break_minutes: null, notify_battery: true, notify_breaks: true, notify_worklog: true, low_battery_percent: 20, onboarded: true };
+    let settings = { show_widget: true, profile: "developer", mascot_name: "Koko", user_name: "Bharath", daily_goal_hours: null, break_minutes: null, notify_battery: true, notify_breaks: true, notify_worklog: true, low_battery_percent: 20, onboarded: true };
     let journal = [{ id: 1, date: "", ts: now() - 3000, kind: "task", mood: null, text: "Finish tracker settings page", done: true }, { id: 2, date: "", ts: now() - 900, kind: "note", mood: "good", text: "Fixed the idle-time bug!", done: false }];
     const listeners = {};
     let batt = 64, active = 3 * 3600 + 540;

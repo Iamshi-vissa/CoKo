@@ -315,6 +315,7 @@ pub fn delete_journal(conn: &Connection, id: i64) -> rusqlite::Result<()> {
 // ---------------------------------------------------------------- settings
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(default)]
 pub struct Settings {
     pub profile: String,
     pub mascot_name: String,
@@ -326,6 +327,9 @@ pub struct Settings {
     pub notify_worklog: bool,
     pub low_battery_percent: f32,
     pub onboarded: bool,
+    pub show_widget: bool,
+    pub widget_x: Option<i32>,
+    pub widget_y: Option<i32>,
 }
 
 impl Default for Settings {
@@ -341,6 +345,9 @@ impl Default for Settings {
             notify_worklog: true,
             low_battery_percent: 20.0,
             onboarded: false,
+            show_widget: true,
+            widget_x: None,
+            widget_y: None,
         }
     }
 }

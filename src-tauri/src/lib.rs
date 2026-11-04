@@ -8,7 +8,7 @@ use std::sync::{Arc, Mutex};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Manager, RunEvent, State, WindowEvent,
+    AppHandle, Emitter, Manager, PhysicalPosition, RunEvent, State, WebviewWindow, WindowEvent,
 };
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_notification::NotificationExt;
@@ -25,6 +25,91 @@ type CmdResult<T> = Result<T, String>;
 
 fn err<E: std::fmt::Display>(e: E) -> String {
     e.to_string()
+}
+
+// ------------------------------------------------------------------ windows
+
+/// Widget window size in logical pixels; keep in sync with tauri.conf.json.
+const WIDGET_W: f64 = 210.0;
+const WIDGET_H: f64 = 230.0;
+
+fn window(app: &AppHandle, label: &str) -> Option<WebviewWindow> {
+    app.get_webview_window(label)
+}
+
+/// Place the dashboard next to the widget (to its left if there is room,
+/// otherwise to its right), bottom-aligned and clamped to the screen.
+fn place_dashboard(app: &AppHandle) -> tauri::Result<()> {
+    let (Some(widget), Some(main)) = (window(app, "widget"), window(app, "main")) else { return Ok(()) };
+    if !widget.is_visible()? {
+        main.center()?;
+        return Ok(());
+    }
+    let wp = widget.outer_position()?;
+    let Some(mon) = widget.current_monitor()?.or(widget.primary_monitor()?) else { return Ok(()) };
+    let sf = mon.scale_factor();
+    let mut ws = widget.outer_size()?;
+    if ws.width == 0 {
+        ws = tauri::PhysicalSize::new((WIDGET_W * sf) as u32, (WIDGET_H * sf) as u32);
+    }
+    let mut ms = main.outer_size()?;
+    if ms.width == 0 {
+        ms = tauri::PhysicalSize::new((1040.0 * sf) as u32, (700.0 * sf) as u32);
+    }
+    let area = mon.work_area();
+    let (ax, ay) = (area.position.x, area.position.y);
+    let (aw, ah) = (area.size.width as i32, area.size.height as i32);
+    let (mw, mh) = (ms.width as i32, ms.height as i32);
+    let gap = (12.0 * sf) as i32;
+
+    let mut x = if wp.x - mw - gap >= ax { wp.x - mw - gap } else { wp.x + ws.width as i32 + gap };
+    let mut y = wp.y + ws.height as i32 - mh;
+    x = x.clamp(ax, (ax + aw - mw).max(ax));
+    y = y.clamp(ay, (ay + ah - mh).max(ay));
+    main.set_position(PhysicalPosition::new(x, y))
+}
+
+fn show_dashboard(app: &AppHandle) {
+    if let Some(main) = window(app, "main") {
+        let _ = place_dashboard(app);
+        let _ = main.show();
+        let _ = main.unminimize();
+        let _ = main.set_focus();
+        let _ = app.emit_to("main", "dashboard-shown", ());
+    }
+}
+
+fn set_widget_visible(app: &AppHandle, visible: bool) {
+    if let Some(w) = window(app, "widget") {
+        let _ = if visible { w.show() } else { w.hide() };
+    }
+}
+
+/// First run: put the widget in the bottom-right corner, above the taskbar or dock.
+fn position_widget(app: &AppHandle, settings: &db::Settings) -> tauri::Result<()> {
+    let Some(w) = window(app, "widget") else { return Ok(()) };
+    if let (Some(x), Some(y)) = (settings.widget_x, settings.widget_y) {
+        // Only restore the saved spot if it is still on a connected monitor.
+        let on_screen = w.available_monitors()?.iter().any(|m| {
+            let (p, s) = (m.position(), m.size());
+            x >= p.x - 50 && y >= p.y - 50 && x < p.x + s.width as i32 && y < p.y + s.height as i32
+        });
+        if on_screen {
+            return w.set_position(PhysicalPosition::new(x, y));
+        }
+    }
+    if let Some(mon) = w.primary_monitor()? {
+        let area = mon.work_area();
+        // outer_size() can still be 0 before the window is first drawn (Linux),
+        // so use the configured size.
+        let sf = mon.scale_factor();
+        let (ww, wh) = ((WIDGET_W * sf) as i32, (WIDGET_H * sf) as i32);
+        let margin = (24.0 * sf) as i32;
+        let x = area.position.x + area.size.width as i32 - ww - margin;
+        let y = area.position.y + area.size.height as i32 - wh - margin;
+        w.set_position(PhysicalPosition::new(x, y))?;
+    }
+    Ok(())
 }
 
 // ------------------------------------------------------------------ commands
@@ -46,10 +131,38 @@ fn bootstrap(state: State<AppState>) -> Bootstrap {
 }
 
 #[tauri::command]
-fn save_settings(state: State<AppState>, settings: db::Settings) -> CmdResult<db::Settings> {
+fn save_settings(app: AppHandle, state: State<AppState>, mut settings: db::Settings) -> CmdResult<db::Settings> {
+    {
+        // The widget position is owned by the backend; keep the latest value.
+        let cur = state.settings.lock().unwrap();
+        settings.widget_x = cur.widget_x;
+        settings.widget_y = cur.widget_y;
+    }
     db::save_settings(&state.db.lock().unwrap(), &settings).map_err(err)?;
     *state.settings.lock().unwrap() = settings.clone();
+    set_widget_visible(&app, settings.show_widget);
+    let _ = app.emit("settings-changed", settings.clone());
     Ok(settings)
+}
+
+#[tauri::command]
+fn toggle_dashboard(app: AppHandle) {
+    if let Some(main) = window(&app, "main") {
+        let visible = main.is_visible().unwrap_or(false);
+        let minimized = main.is_minimized().unwrap_or(false);
+        if visible && !minimized {
+            let _ = main.hide();
+        } else {
+            show_dashboard(&app);
+        }
+    }
+}
+
+#[tauri::command]
+fn hide_dashboard(app: AppHandle) {
+    if let Some(main) = window(&app, "main") {
+        let _ = main.hide();
+    }
 }
 
 #[tauri::command]
@@ -101,14 +214,6 @@ fn test_notification(app: AppHandle, state: State<AppState>) -> CmdResult<()> {
 
 // ------------------------------------------------------------------ app
 
-fn show_main(app: &AppHandle) {
-    if let Some(w) = app.get_webview_window("main") {
-        let _ = w.show();
-        let _ = w.unminimize();
-        let _ = w.set_focus();
-    }
-}
-
 pub fn run() {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
@@ -124,7 +229,7 @@ pub fn run() {
 
             app.manage(AppState {
                 db: Arc::new(Mutex::new(conn)),
-                settings: Arc::new(Mutex::new(settings)),
+                settings: Arc::new(Mutex::new(settings.clone())),
                 live: Arc::new(Mutex::new(tracker::LiveStatus { session_start, ..Default::default() })),
                 session_id,
                 session_start,
@@ -139,46 +244,72 @@ pub fn run() {
                 }
             }
 
-            // Tray icon: CoKo keeps tracking while the window is hidden.
-            let open = MenuItem::with_id(app, "open", "Open CoKo", true, None::<&str>)?;
+            // Floating widget.
+            let handle = app.handle().clone();
+            let _ = position_widget(&handle, &settings);
+            set_widget_visible(&handle, settings.show_widget);
+
+            // First run: open the dashboard so the user can pick a CoKo type.
+            if !settings.onboarded {
+                show_dashboard(&handle);
+            }
+
+            // Tray icon: CoKo keeps tracking while its windows are hidden.
+            let open = MenuItem::with_id(app, "open", "Open dashboard", true, None::<&str>)?;
+            let widget = MenuItem::with_id(app, "widget", "Show / hide widget", true, None::<&str>)?;
             let quit = MenuItem::with_id(app, "quit", "Quit CoKo", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&open, &quit])?;
+            let menu = Menu::with_items(app, &[&open, &widget, &quit])?;
             TrayIconBuilder::with_id("coko-tray")
                 .icon(app.default_window_icon().unwrap().clone())
                 .tooltip("CoKo is tracking your day")
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, e| match e.id.as_ref() {
-                    "open" => show_main(app),
+                    "open" => show_dashboard(app),
+                    "widget" => {
+                        let state = app.state::<AppState>();
+                        let mut s = state.settings.lock().unwrap();
+                        s.show_widget = !s.show_widget;
+                        let _ = db::save_settings(&state.db.lock().unwrap(), &s);
+                        set_widget_visible(app, s.show_widget);
+                        let _ = app.emit("settings-changed", s.clone());
+                    }
                     "quit" => app.exit(0),
                     _ => {}
                 })
                 .on_tray_icon_event(|tray, e| {
                     if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = e {
-                        show_main(tray.app_handle());
+                        show_dashboard(tray.app_handle());
                     }
                 })
                 .build(app)?;
 
-            if std::env::args().any(|a| a == "--minimized") {
-                if let Some(w) = app.get_webview_window("main") {
-                    let _ = w.hide();
-                }
-            }
-
-            tracker::spawn(app.handle().clone());
+            tracker::spawn(handle);
             Ok(())
         })
-        .on_window_event(|window, event| {
-            // Closing the window hides it to the tray instead of quitting.
-            if let WindowEvent::CloseRequested { api, .. } = event {
+        .on_window_event(|window, event| match event {
+            // Closing either window just hides it; quit from the tray menu.
+            WindowEvent::CloseRequested { api, .. } => {
                 api.prevent_close();
                 let _ = window.hide();
             }
+            // Remember where the user dropped the widget.
+            WindowEvent::Moved(pos) if window.label() == "widget" => {
+                let state = window.state::<AppState>();
+                let mut s = state.settings.lock().unwrap();
+                if s.widget_x != Some(pos.x) || s.widget_y != Some(pos.y) {
+                    s.widget_x = Some(pos.x);
+                    s.widget_y = Some(pos.y);
+                    let _ = db::save_settings(&state.db.lock().unwrap(), &s);
+                }
+            }
+            _ => {}
         })
         .invoke_handler(tauri::generate_handler![
             bootstrap,
             save_settings,
+            toggle_dashboard,
+            hide_dashboard,
             day_summary,
             week_summary,
             add_journal,

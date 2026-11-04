@@ -197,3 +197,6 @@ input:focus { border-color: var(--accent); }
 .koko.mood-focused .arm-r { animation-delay: .15s; }
 @keyframes type { to { transform: translateY(-3px); } }
 .koko .arm { transition: transform .3s; }
+
+/* sprite art in the dashboard companion panel */
+.mascot.sprite-char { height: 270px; }
