@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" class="widget-root">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; media-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'" />
+  <title>CoKo</title>
+  <link rel="stylesheet" href="shared/base.css" />
+  <link rel="stylesheet" href="shared/mascot.css" />
+  <link rel="stylesheet" href="widget.css" />
+</head>
+<body>
+  <p class="bubble" id="bubble" role="status" aria-live="polite"></p>
+  <div class="stage" id="stage" tabindex="0" aria-label="CoKo desk buddy. Press Enter to open your day log.">
+    <div class="buddy" id="buddy"></div>
+    <div class="chip" id="chip">
+      <span class="chip-exp"><i id="chipExp"></i></span>
+      <b id="chipTime">0m</b>
+      <span id="chipBatt"></span>
+    </div>
+  </div>
+  <script src="shared/mascot.js"></script>
+  <script src="shared/character.js"></script>
+  <script src="widget.js"></script>
+</body>
+</html>

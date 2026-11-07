@@ -1,0 +1,51 @@
+/* CoKo design tokens, shared by the widget and the dashboard. */
+@font-face { font-family: 'Rounded'; src: url(fonts/rounded-400.woff2) format('woff2'); font-weight: 400; }
+@font-face { font-family: 'Rounded'; src: url(fonts/rounded-500.woff2) format('woff2'); font-weight: 500; }
+@font-face { font-family: 'Rounded'; src: url(fonts/rounded-700.woff2) format('woff2'); font-weight: 700; }
+@font-face { font-family: 'Rounded'; src: url(fonts/rounded-800.woff2) format('woff2'); font-weight: 800; }
+@font-face { font-family: 'Dela'; src: url(fonts/dela.woff2) format('woff2'); font-weight: 400; }
+
+:root {
+  --sky: #eaf3ff;      /* panel wash */
+  --paper: #ffffff;
+  --ink: #1e2350;      /* text, outlines */
+  --ink-2: #5b6190;    /* secondary text */
+  --line: #d5e2f7;
+  --sakura: #ff7eb6;   /* HP / battery */
+  --mint: #3fcfae;     /* focus, good */
+  --gold: #ffc94a;     /* EXP, level */
+  --alert: #ff5a6e;
+  --accent: #7aa2ff;   /* set per CoKo type */
+  font-family: 'Rounded', system-ui, sans-serif;
+  color: var(--ink);
+}
+* { box-sizing: border-box; }
+button, input { font: inherit; color: inherit; }
+
+/* ---------- character player ---------- */
+.ch { position: relative; width: 100%; height: 100%; }
+.ch-rig { position: absolute; inset: 0; transform-origin: 50% 96%; will-change: transform; }
+.ch-layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; opacity: 0; transition: opacity .4s ease; pointer-events: none; }
+.ch-layer.on { opacity: 1; }
+.ch-builtin { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; }
+.ch-builtin svg { width: 88%; height: auto; }
+.ch-builtin .shadow { display: none; }
+.ch-shadow { position: absolute; left: 50%; bottom: 1px; width: 52%; height: 8px; border-radius: 50%; background: rgba(20,24,60,.45); filter: blur(1.5px); transform: translateX(-50%); }
+.ch .fx { position: absolute; display: none; font-weight: 800; pointer-events: none; z-index: 2; }
+.ch.fx-zzz .fx-zzz, .ch.fx-sweat .fx-sweat, .ch.fx-sparkle .fx-sparkle, .ch.fx-heart .fx-heart, .ch.fx-bang .fx-bang { display: block; }
+.ch-builtin ~ .ch-fx { display: none; } /* the vector mascot draws its own effects */
+.ch .fx-zzz { right: 6%; top: 6%; color: #b9b5ff; font-size: 20px; animation: zz 2.4s infinite; text-shadow: 0 1px 0 #fff; }
+.ch .fx-zzz small { font-size: .65em; margin-left: 2px; }
+.ch .fx-sweat { right: 20%; top: 20%; width: 9px; height: 13px; background: #8fd3ff; border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%; animation: drip 1.6s infinite; }
+.ch .fx-sparkle { inset: 0; }
+.ch .fx-sparkle i { position: absolute; color: var(--gold); font-style: normal; animation: twinkle 1.2s infinite; text-shadow: 0 0 6px #fff; }
+.ch .fx-sparkle i:nth-child(1) { left: 4%; top: 20%; font-size: 18px; }
+.ch .fx-sparkle i:nth-child(2) { right: 4%; top: 10%; font-size: 14px; animation-delay: .3s; }
+.ch .fx-sparkle i:nth-child(3) { right: 10%; top: 54%; font-size: 12px; animation-delay: .6s; }
+.ch .fx-heart { right: 8%; top: 8%; color: var(--sakura); font-size: 22px; animation: beat 1s infinite; }
+.ch .fx-bang { right: 10%; top: 4%; color: var(--alert); font-size: 26px; animation: beat .6s infinite; }
+@keyframes drip { 50% { transform: translateY(5px); } }
+@keyframes twinkle { 50% { transform: scale(.4) rotate(45deg); opacity: .5; } }
+@keyframes beat { 30% { transform: scale(1.2); } }
+@keyframes zz { 0% { opacity: 0; transform: translateY(8px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-10px); } }
+@media (prefers-reduced-motion: reduce) { .ch .fx { animation: none !important; } }

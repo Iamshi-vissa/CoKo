@@ -1,13 +1,51 @@
 {
   "name": "coko",
-  "version": "0.1.0",
-  "private": true,
-  "description": "CoKo — desktop assistant & daily activity tracker with a reactive mascot",
+  "productName": "CoKo",
+  "version": "2.0.0",
+  "description": "CoKo \u2014 an animated anime desk buddy that tracks your day",
+  "author": "Iamshi-vissa",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/main/main.js",
   "scripts": {
-    "dev": "tauri dev",
-    "build": "tauri build"
+    "start": "electron .",
+    "dist": "electron-builder",
+    "character": "python3 tools/make_character.py"
+  },
+  "dependencies": {
+    "systeminformation": "^5.23.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2"
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.coko.tracker",
+    "productName": "CoKo",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png"
+    }
   }
 }

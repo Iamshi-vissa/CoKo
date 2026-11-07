@@ -1,0 +1,72 @@
+:root { --hair: #6fd6c4; --hair-dark: #3fb3a3; --skin: #ffe8da; --muted: #a7a4d6; --bad: #ff5a6e; }
+/* ================= Koko mascot ================= */
+.koko { width: 100%; overflow: visible; }
+.koko .shadow { fill: rgba(0,0,0,.25); animation: shadow 3s ease-in-out infinite; transform-origin: 120px 278px; }
+.koko .body { animation: bob 3s ease-in-out infinite; transform-origin: 120px 270px; }
+@keyframes bob { 50% { transform: translateY(-6px); } }
+@keyframes shadow { 50% { transform: scaleX(.88); } }
+.koko .tail-l { transform-origin: 56px 96px; animation: sway 3s ease-in-out infinite; }
+.koko .tail-r { transform-origin: 184px 96px; animation: sway 3s ease-in-out infinite reverse; }
+@keyframes sway { 50% { transform: rotate(4deg); } }
+.koko .hair { fill: var(--hair); } .koko .hair-dark { fill: var(--hair-dark); }
+.koko .shine { fill: none; stroke: rgba(255,255,255,.55); stroke-width: 4; stroke-linecap: round; }
+.koko .skin { fill: var(--skin); }
+.koko .hoodie { fill: var(--accent); transition: fill .4s; }
+.koko .hoodie-shade { fill: rgba(0,0,0,.15); }
+.koko .pocket { fill: rgba(0,0,0,.12); }
+.koko .string { fill: #fff; }
+.koko .band { fill: none; stroke: #2e2c55; stroke-width: 8; stroke-linecap: round; }
+.koko .ear-cup, .koko .cup { fill: #2e2c55; } .koko .ear-in { fill: #ff9ec4; }
+.koko .cup-light { fill: var(--accent); animation: glow 2s infinite; } @keyframes glow { 50% { opacity: .35; } }
+.koko .brow { fill: none; stroke: #2a8f82; stroke-width: 4; stroke-linecap: round; transition: transform .3s; }
+.koko.brows-worry .brow-l { transform: rotate(12deg) translate(4px, -6px); transform-origin: 92px 90px; }
+.koko.brows-worry .brow-r { transform: rotate(-12deg) translate(-4px, -6px); transform-origin: 148px 90px; }
+.koko.brows-focus .brow-l { transform: rotate(-10deg) translateY(4px); transform-origin: 92px 90px; }
+.koko.brows-focus .brow-r { transform: rotate(10deg) translateY(4px); transform-origin: 148px 90px; }
+.koko.brows-up .brow { transform: translateY(-7px); }
+.koko .eye-white { fill: #fff; } .koko .iris { fill: #e0902e; } .koko .iris-in { fill: #7a3d12; }
+.koko .hl { fill: #fff; } .koko .lash { fill: none; stroke: #2e2c55; stroke-width: 5; stroke-linecap: round; }
+.koko .pupil { transition: transform .12s ease-out; }
+.koko .eye { transform-box: fill-box; transform-origin: center; transition: transform .08s; }
+.koko.blink .eyes-open .eye { transform: scaleY(.08); }
+.koko .line { fill: none; stroke: #2e2c55; stroke-width: 5; stroke-linecap: round; }
+.koko .line.thin { stroke-width: 3; }
+.koko .star { fill: #ffd447; stroke: #e0902e; stroke-width: 2; stroke-linejoin: round; }
+.koko .blush { fill: #ff9ec4; opacity: .55; }
+.koko .mouth { fill: none; stroke: #8a3a55; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.koko .mouth-fill { fill: #b34a6c; stroke: #8a3a55; stroke-width: 3; }
+
+.koko .eyes, .koko .mouth, .koko .mouth-fill, .koko .fx { display: none; }
+.koko.eyes-open-on .eyes-open, .koko.eyes-happy-on .eyes-happy, .koko.eyes-closed-on .eyes-closed,
+.koko.eyes-star-on .eyes-star, .koko.eyes-swirl-on .eyes-swirl { display: inline; }
+.koko.mouth-smile-on .m-smile, .koko.mouth-cat-on .m-cat, .koko.mouth-open-on .m-open, .koko.mouth-grin-on .m-grin,
+.koko.mouth-o-on .m-o, .koko.mouth-flat-on .m-flat, .koko.mouth-wavy-on .m-wavy { display: inline; }
+.koko.fx-zzz-on .fx-zzz, .koko.fx-sweat-on .fx-sweat, .koko.fx-sparkle-on .fx-sparkle, .koko.fx-heart-on .fx-heart,
+.koko.fx-bolt-on .fx-bolt, .koko.fx-bang-on .fx-bang { display: inline; }
+
+.koko .fx-zzz text { fill: var(--muted); font-weight: 800; font-size: 26px; animation: zz 2.4s infinite; }
+.koko .fx-zzz .s { font-size: 18px; animation-delay: .4s; } .koko .fx-zzz .xs { font-size: 13px; animation-delay: .8s; }
+@keyframes zz { 0% { opacity: 0; transform: translateY(8px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-10px); } }
+.koko .fx-sweat { fill: #8fd3ff; animation: drip 1.6s infinite; } @keyframes drip { 50% { transform: translateY(5px); } }
+.koko .fx-sparkle path { fill: #ffd447; animation: twinkle 1.2s infinite; transform-box: fill-box; transform-origin: center; }
+.koko .fx-sparkle path:nth-child(2) { animation-delay: .3s; } .koko .fx-sparkle path:nth-child(3) { animation-delay: .6s; }
+@keyframes twinkle { 50% { transform: scale(.4) rotate(45deg); opacity: .5; } }
+.koko .fx-heart { fill: #ff6b9b; animation: beat 1s infinite; transform-box: fill-box; transform-origin: center; } @keyframes beat { 30% { transform: scale(1.2); } }
+.koko .fx-bolt { fill: #ffd447; stroke: #e0902e; stroke-width: 2; }
+.koko .fx-bang { fill: var(--bad); }
+
+/* body language per mood */
+.koko.mood-sleepy .body { animation-duration: 5s; }
+.koko.mood-sleepy .head { transform: rotate(-7deg); transform-origin: 120px 170px; transition: transform .6s; }
+.koko.mood-tired .head { transform: rotate(5deg) translateY(4px); transform-origin: 120px 170px; transition: transform .6s; }
+.koko.mood-excited .body, .koko.mood-giggle .body { animation: hop .5s ease-in-out infinite; }
+@keyframes hop { 50% { transform: translateY(-14px); } }
+.koko.mood-panic .body { animation: shake .25s linear infinite; }
+@keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.koko.mood-wave .arm-r { animation: wave .5s ease-in-out infinite alternate; transform-origin: 160px 196px; }
+@keyframes wave { from { transform: rotate(-150deg); } to { transform: rotate(-110deg); } }
+.koko.mood-focused .arm-l, .koko.mood-focused .arm-r { animation: type .3s ease-in-out infinite alternate; }
+.koko.mood-focused .arm-r { animation-delay: .15s; }
+@keyframes type { to { transform: translateY(-3px); } }
+.koko .arm { transition: transform .3s; }
+

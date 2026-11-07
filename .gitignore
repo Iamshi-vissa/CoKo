@@ -1,5 +1,5 @@
 node_modules/
-src-tauri/target/
-src-tauri/gen/
-*.sqlite3*
+dist/
 .DS_Store
+__pycache__/
+*.pyc

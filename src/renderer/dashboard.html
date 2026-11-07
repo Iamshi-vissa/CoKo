@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; media-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'" />
+  <title>CoKo</title>
+  <link rel="stylesheet" href="shared/base.css" />
+  <link rel="stylesheet" href="shared/mascot.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <main class="panel" id="panel">
+    <!-- Status header -->
+    <header class="hero">
+      <div class="portrait"><div id="portrait"></div></div>
+      <div class="who">
+        <h1 id="name">Koko</h1>
+        <p class="rank"><span class="lv" id="level">Lv 1</span> <span id="rankName">Developer</span></p>
+        <div class="exp" role="progressbar" aria-label="Today's goal" aria-valuemin="0" aria-valuemax="100" id="expBar"><i id="expFill"></i></div>
+        <p class="exp-text" id="expText">0m of 6h today</p>
+      </div>
+      <button class="close" id="close" aria-label="Close">✕</button>
+      <p class="say" id="say"></p>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="today" aria-selected="true">Today</button>
+      <button role="tab" data-tab="quests">Quests</button>
+      <button role="tab" data-tab="week">Week</button>
+      <button role="tab" data-tab="setup">Setup</button>
+    </nav>
+
+    <div class="scroll">
+      <!-- Today -->
+      <section class="view" id="view-today">
+        <div class="big">
+          <div><strong id="active">0m</strong><span>active today</span></div>
+          <dl>
+            <div><dt>Focus</dt><dd id="focus">0m</dd></div>
+            <div><dt>Away</dt><dd id="idle">0m</dd></div>
+            <div><dt>Since</dt><dd id="first">–</dd></div>
+          </dl>
+        </div>
+
+        <div class="hp" id="hpRow">
+          <span class="hp-label">Battery</span>
+          <span class="hp-bar"><i id="hpFill"></i></span>
+          <b id="hpText">–</b>
+        </div>
+
+        <h2>Your day, hour by hour</h2>
+        <div class="strip" id="strip" aria-label="Active minutes per hour"></div>
+        <div class="strip-axis"><span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span></div>
+
+        <h2>Log-ins</h2>
+        <ol class="log" id="log"></ol>
+
+        <h2>Where your time went</h2>
+        <ul class="apps" id="apps"></ul>
+      </section>
+
+      <!-- Quests (journal) -->
+      <section class="view" id="view-quests" hidden>
+        <form class="quest-form" id="questForm">
+          <p class="prompt" id="prompt">What did you ship today?</p>
+          <div class="chips" id="kind">
+            <button type="button" data-v="task" class="on">Quest</button>
+            <button type="button" data-v="note">Note</button>
+            <button type="button" data-v="worklog">Work log</button>
+          </div>
+          <div class="chips small" id="mood">
+            <button type="button" data-v="great">great</button><button type="button" data-v="good">good</button>
+            <button type="button" data-v="okay">okay</button><button type="button" data-v="tired">tired</button>
+            <button type="button" data-v="stressed">stressed</button>
+          </div>
+          <div class="row"><input id="questText" placeholder="Add a quest or a note…" maxlength="500" autocomplete="off" /><button class="primary" type="submit">Add</button></div>
+        </form>
+        <ul class="quests" id="quests"></ul>
+      </section>
+
+      <!-- Week -->
+      <section class="view" id="view-week" hidden>
+        <p class="week-total" id="weekTotal"></p>
+        <div class="week" id="week"></div>
+        <p class="hint">Darker part of each bar is focus time. The dashed line is your daily goal.</p>
+      </section>
+
+      <!-- Setup -->
+      <section class="view" id="view-setup" hidden>
+        <p class="welcome" id="welcome" hidden>Hi! I'm your new desk buddy. Pick the type that fits you best and I'll set your goals, break reminders and app tracking to match. You can change it any time.</p>
+        <div class="types" id="types"></div>
+        <div class="form">
+          <label>Your name<input id="sUser" placeholder="What should I call you?" /></label>
+          <label>Buddy's name<input id="sMascot" /></label>
+          <label>Daily goal (hours)<input id="sGoal" type="number" min="0.5" max="16" step="0.5" /></label>
+          <label>Break every (minutes)<input id="sBreak" type="number" min="10" max="240" step="5" /></label>
+          <label>Low battery warning (%)<input id="sBatt" type="number" min="5" max="60" step="5" /></label>
+          <fieldset class="size"><legend>Buddy size</legend>
+            <label><input type="radio" name="size" value="small" />Small</label>
+            <label><input type="radio" name="size" value="medium" />Medium</label>
+            <label><input type="radio" name="size" value="large" />Large</label>
+          </fieldset>
+          <label class="tog"><input type="checkbox" id="sWidget" />Show buddy on the desktop</label>
+          <label class="tog"><input type="checkbox" id="sNBreak" />Break reminders</label>
+          <label class="tog"><input type="checkbox" id="sNBatt" />Battery alerts</label>
+          <label class="tog"><input type="checkbox" id="sNLog" />Hourly work log</label>
+          <div class="row end"><button type="button" id="testNotify">Send a test notification</button><button type="button" class="primary" id="save">Save</button></div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="shared/mascot.js"></script>
+  <script src="shared/character.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
